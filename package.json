@@ -1,0 +1,42 @@
+{
+  "name": "posterminal",
+  "description": "module to interact with sb_pilot",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "posterminal.js",
+  "author": "zumm",
+  "homepage": "https://github.com/zumm/posterminal",
+  "bugs": "https://github.com/zumm/posterminal/issues",
+  "repository": {
+    "url": "https://github.com/zumm/posterminal",
+    "type": "git"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.14.5",
+    "jest": "^27.0.0-next.11",
+    "mock-fs": "^5.0.0",
+    "standard": "^16.0.3"
+  },
+  "babel": {
+    "env": {
+      "test": {
+        "plugins": [
+          "@babel/plugin-transform-modules-commonjs"
+        ]
+      }
+    }
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.m?js$": "babel-jest"
+    }
+  }
+}
