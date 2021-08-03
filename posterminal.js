@@ -2,7 +2,7 @@ import { promisify } from 'util'
 import { execFile } from 'child_process'
 import { readFile } from 'fs/promises'
 
-import { decode } from 'iconv-lite'
+import iconv from 'iconv-lite'
 
 import { Parser } from './parser.js'
 import logger from './logger.js'
@@ -48,7 +48,7 @@ export class Terminal {
 
   static async _read (path, tag) {
     try {
-      return decode(await readFile(path), 'koi8-r')
+      return iconv.decode(await readFile(path), 'koi8-r')
     } catch (exception) {
       throw new TerminalError(`Unable to read "${tag}" file`, exception)
     }
