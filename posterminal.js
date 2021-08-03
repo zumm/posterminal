@@ -2,6 +2,8 @@ import { promisify } from 'util'
 import { execFile } from 'child_process'
 import { readFile } from 'fs/promises'
 
+import { decode } from 'iconv-lite'
+
 import { Parser } from './parser.js'
 import logger from './logger.js'
 
@@ -15,10 +17,10 @@ export class TerminalError extends Error {
 }
 
 export class Terminal {
-  constructor (sbp, p, e) {
+  constructor (sbp, e, p) {
     this.sbp = sbp
-    this.p = p
     this.e = e
+    this.p = p
 
     this._parser = new Parser('')
     this._lastResult = null
@@ -46,14 +48,14 @@ export class Terminal {
 
   static async _read (path, tag) {
     try {
-      return await readFile(path, 'utf-8')
+      return decode(await readFile(path), 'koi8-r')
     } catch (exception) {
       throw new TerminalError(`Unable to read "${tag}" file`, exception)
     }
   }
 
   async _parsePayment () {
-    const content = await Terminal._read(this.p, 'p')
+    const content = await Terminal._read(this.e, 'e')
 
     try {
       // empty line to easy deal with optional 'reference link'
@@ -75,19 +77,19 @@ export class Terminal {
 
       return JSON.stringify(result)
     } catch (exception) {
-      throw new TerminalError('Unable to parse "p" file', exception)
+      throw new TerminalError('Unable to parse "e" file', exception)
     }
   }
 
   async _parseStatus () {
-    const content = await Terminal._read(this.p, 'p')
+    const content = await Terminal._read(this.e, 'e')
 
     try {
       const parser = this._parser.reset(content + '\n')
       const [code, message] = parser.parseStatusLine()
       return JSON.stringify({ code, message })
     } catch (exception) {
-      throw new TerminalError('Unable to parse "p" file', exception)
+      throw new TerminalError('Unable to parse "e" file', exception)
     }
   }
 
@@ -97,7 +99,7 @@ export class Terminal {
       if (code !== 0) throw new TerminalError('Error of sb_pilot', code)
 
       const description = await this[parseMethod]()
-      const slip = await Terminal._read(this.e, 'e')
+      const slip = await Terminal._read(this.p, 'p')
 
       return { status: 'ok', description, slip }
     } catch (exception) {

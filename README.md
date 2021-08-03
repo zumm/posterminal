@@ -30,14 +30,18 @@ npm run test
 import { Terminal, TerminalError } from 'posterminal'
 
 const SBP = '/path/to/sbp'
-const P = '/path/to/p'
 const E = '/path/to/e'
+const P = '/path/to/p'
 
 try {
-  const terminal = new Terminal(SBP, P, E)
+  const terminal = new Terminal(SBP, E, P)
 
   // all methods return:
-  // { status: 'ok', description: '<content of P file represented in JSON>', slip: '<content of E file as is>' }
+  // {
+  //   status: 'ok',
+  //   description: '<content of E file represented in JSON>',
+  //   slip: '<content of P file as is>'
+  // }
   await terminal.checkConnection()
   await terminal.processPayment(127) 
   await terminal.checkResults()

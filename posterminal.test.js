@@ -3,13 +3,18 @@ import mock from 'mock-fs'
 import { execFile } from 'child_process'
 import { Terminal, TerminalError } from './posterminal.js'
 
+// avoid errors with lazy loading
+import iconv from 'iconv-lite'
+import encodings from 'iconv-lite/encodings'
+iconv.encodings = encodings
+
 const SBP = '/path/to/fake/sbp'
-const P = '/path/to/fake/p'
 const E = '/path/to/fake/e'
+const P = '/path/to/fake/p'
 
 jest.mock('child_process')
 
-const terminal = new Terminal(SBP, P, E)
+const terminal = new Terminal(SBP, E, P)
 
 const paymentResults = function * () {
   yield terminal.processPayment(23)
@@ -118,48 +123,10 @@ describe('code of sb_pilot is not zero', () => {
   })
 })
 
-describe('troubles with p file', () => {
-  beforeAll(() => {
-    execFile.mockImplementation(execFileSuccess)
-    mock({}, {})
-  })
-
-  afterAll(() => {
-    mock.restore()
-  })
-
-  test('all methods throw exception', async () => {
-    for (const result of results()) {
-      await expect(result).rejects.toThrow(TerminalError)
-      await expect(result).rejects.toHaveProperty('message', 'Unable to read "p" file')
-      await expect(result).rejects.toHaveProperty('details', expect.any(Error))
-    }
-  })
-})
-
-describe('invalid p file content', () => {
-  beforeAll(() => {
-    execFile.mockImplementation(execFileSuccess)
-    mock({ [P]: 'bad content' }, {})
-  })
-
-  afterAll(() => {
-    mock.restore()
-  })
-
-  test('all methods throw exception', async () => {
-    for (const result of results()) {
-      await expect(result).rejects.toThrow(TerminalError)
-      await expect(result).rejects.toHaveProperty('message', 'Unable to parse "p" file')
-      await expect(result).rejects.toHaveProperty('details', expect.any(Error))
-    }
-  })
-})
-
 describe('troubles with e file', () => {
   beforeAll(() => {
     execFile.mockImplementation(execFileSuccess)
-    mock({ [P]: mock.load('p.txt') }, {})
+    mock({}, {})
   })
 
   afterAll(() => {
@@ -175,10 +142,48 @@ describe('troubles with e file', () => {
   })
 })
 
+describe('invalid e file content', () => {
+  beforeAll(() => {
+    execFile.mockImplementation(execFileSuccess)
+    mock({ [E]: 'bad content' }, {})
+  })
+
+  afterAll(() => {
+    mock.restore()
+  })
+
+  test('all methods throw exception', async () => {
+    for (const result of results()) {
+      await expect(result).rejects.toThrow(TerminalError)
+      await expect(result).rejects.toHaveProperty('message', 'Unable to parse "e" file')
+      await expect(result).rejects.toHaveProperty('details', expect.any(Error))
+    }
+  })
+})
+
+describe('troubles with p file', () => {
+  beforeAll(() => {
+    execFile.mockImplementation(execFileSuccess)
+    mock({ [E]: mock.load('e.txt') }, {})
+  })
+
+  afterAll(() => {
+    mock.restore()
+  })
+
+  test('all methods throw exception', async () => {
+    for (const result of results()) {
+      await expect(result).rejects.toThrow(TerminalError)
+      await expect(result).rejects.toHaveProperty('message', 'Unable to read "p" file')
+      await expect(result).rejects.toHaveProperty('details', expect.any(Error))
+    }
+  })
+})
+
 describe('everything ok', () => {
   beforeAll(() => {
     execFile.mockImplementation(execFileSuccess)
-    mock({ [P]: mock.load('p.txt'), [E]: 'good content' }, {})
+    mock({ [E]: mock.load('e.txt'), [P]: 'good content' }, {})
   })
 
   afterAll(() => {
