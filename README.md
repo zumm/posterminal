@@ -9,14 +9,19 @@ npm install https://github.com/zumm/posterminal
 ```
 
 ## Testing
-Test using `yarn`:
+Tests and testing tools are not part of package, so you need to clone repository first:
 ```bash
-cd ../node_modules/posterminal
+git clone https://github.com/zumm/posterminal
+cd posterminal
+```
+Now you can install testing tools and test this package using `yarn`:
+```bash
+yarn install
 yarn test
 ```
 Or `npm`:
 ```bash
-cd ../node_modules/posterminal
+npm install
 npm run test
 ```
 
