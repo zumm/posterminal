@@ -34,11 +34,14 @@ export class Terminal {
       throw new TerminalError('Unable to execute sb_pilot', exception)
     }
 
-    logger.info(`Received stdout "${result.stdout}"`)
+    logger.info(`Received stdout "${result.stdout}", stderr "${result.stderr}"`)
 
-    const match = result.stdout.match(/^\s*return:\s*(-?\d+)\s*$/)
+    if (result.stderr) throw new TerminalError('Non-empty stderr of sb_pilot', result.stderr)
+
+    // last non-empty line must contain only "return:<code>"
+    const match = result.stdout.trim().split('\n').pop().match(/^return:\s*(-?\d+)\s*$/)
     if (match) return parseInt(match[1])
-    throw new TerminalError('Unexpected output of sb_pilot', result.stdout)
+    throw new TerminalError('Unexpected stdout of sb_pilot', result.stdout)
   }
 
   static async _read (path, tag) {

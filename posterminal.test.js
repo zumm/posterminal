@@ -28,7 +28,7 @@ const results = function * () {
   yield * otherResults()
 }
 
-const execFileSuccess = (command, parameters, callback) => callback(null, { stdout: 'return:0' })
+const execFileSuccess = (command, parameters, callback) => callback(null, { stdout: 'Pid file:3\nreturn:0\n\n' })
 
 describe('troubles with sb_pilot file', () => {
   const trouble = new Error()
@@ -52,7 +52,29 @@ describe('troubles with sb_pilot file', () => {
   })
 })
 
-describe('invalid sb_pilot output', () => {
+describe('non-empty sb_pilot stderr', () => {
+  const badOutput = 'bad output'
+
+  beforeAll(() => {
+    execFile.mockImplementation((command, parameters, callback) => callback(null, { stderr: badOutput }))
+    mock({}, {})
+  })
+
+  afterAll(() => {
+    execFile.mockImplementation(execFileSuccess)
+    mock.restore()
+  })
+
+  test('all methods throw exception', async () => {
+    for (const result of results()) {
+      await expect(result).rejects.toThrow(TerminalError)
+      await expect(result).rejects.toHaveProperty('message', 'Non-empty stderr of sb_pilot')
+      await expect(result).rejects.toHaveProperty('details', badOutput)
+    }
+  })
+})
+
+describe('invalid sb_pilot stdout', () => {
   const badOutput = 'bad output'
 
   beforeAll(() => {
@@ -68,7 +90,7 @@ describe('invalid sb_pilot output', () => {
   test('all methods throw exception', async () => {
     for (const result of results()) {
       await expect(result).rejects.toThrow(TerminalError)
-      await expect(result).rejects.toHaveProperty('message', 'Unexpected output of sb_pilot')
+      await expect(result).rejects.toHaveProperty('message', 'Unexpected stdout of sb_pilot')
       await expect(result).rejects.toHaveProperty('details', badOutput)
     }
   })
